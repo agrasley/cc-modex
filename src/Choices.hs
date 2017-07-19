@@ -1,6 +1,7 @@
-{-# LANGUAGE TemplateHaskell, TypeOperators #-}
+{-# LANGUAGE TemplateHaskell  #-}
+{-# LANGUAGE TypeOperators    #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFunctor    #-}
 
 module Choices where
 
@@ -8,7 +9,6 @@ import Data.Comp
 import Data.Comp.Derive
 import Data.Comp.Show ()
 import Data.Comp.Equality ()
-import Same
 import Generic
 
 type Tag = String
@@ -23,9 +23,6 @@ data Choice a = Chc Tag a a
 $(derive [makeTraversable, makeFoldable,
           makeEqF, makeShowF, smartConstructors, smartAConstructors]
          [''Choice])
-
-instance SameF Choice where
-  sameF _ _ = False
 
 idemp' :: (Choice :<: dom, EqF dom) => Term dom -> Term dom
 idemp' v | Just (Chc _ a b) <- project v, a == b = a

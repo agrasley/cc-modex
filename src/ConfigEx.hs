@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances, TypeOperators #-}
+{-# LANGUAGE TypeOperators #-}
 
 module ConfigEx where
 
@@ -21,10 +21,10 @@ idempEx :: Term Sig'
 idempEx = idemp (iChc "B" (iChc "A" (iI 1) (iI 1)) (iI 1))
 
 selectEx :: Term Sig'
-selectEx = select [("A",R),("C",R)] ((iChc "C" (iI 0) (iChc "A" (iI 1) (iI 2))) `iAdd` (iChc "B" (iI 3) (iI 4)))
+selectEx = select [("A",R),("C",R)] (iChc "C" (iI 0) (iChc "A" (iI 1) (iI 2)) `iAdd` iChc "B" (iI 3) (iI 4))
 
 dominateEx :: Term Sig'
-dominateEx = dominate (iChc "A" (iChc "A" (iI 1) (iI 2)) ((iChc "A" (iI 3) (iI 4)) `iAdd` (iI 5)))
+dominateEx = dominate (iChc "A" (iChc "A" (iI 1) (iI 2)) (iChc "A" (iI 3) (iI 4) `iAdd` iI 5))
 
 factorEx :: Term Sig'
-factorEx = factor (iChc "A" ((iI 1) `iAdd` (iI 2)) ((iI 3) `iAdd` (iI 4)))
+factorEx = factor (iChc "A" (iI 1 `iAdd` iI 2) (iI 3 `iAdd` iI 4))

@@ -1,6 +1,9 @@
 {-# LANGUAGE TemplateHaskell, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Expr where
 
@@ -8,7 +11,8 @@ import Data.Comp
 import Data.Comp.Derive
 import Data.Comp.Show ()
 import Data.Comp.Equality ()
-import Same
+import Choices
+import Factor
 
 data Value a = I Int | B Bool
   deriving Functor
@@ -28,20 +32,20 @@ $(derive [makeTraversable, makeFoldable,
           makeEqF, makeShowF, smartConstructors, smartAConstructors]
          [''Value, ''Arith, ''Logic, ''Cond])
 
-instance SameF Value where
-  sameF _ _ = False
+instance (Arith :<: g, Choice :<: g) => Factor Arith g where
+  factorC' t (Add l r) (Add l' r') = Just (iChc t l l' `iAdd` iChc t r r')
+  factorC' t (Mult l r) (Mult l' r') = Just (iChc t l l' `iAdd` iChc t r r')
+  factorC' _ _ _ = Nothing
 
-instance SameF Arith where
-  sameF (Add _ _) (Add _ _) = True
-  sameF (Mult _ _) (Mult _ _) = True
-  sameF _ _ = False
+instance (Value :<: g, Choice :<: g) => Factor Value g where
+  factorC' _ _ _ = Nothing
 
-instance SameF Logic where
-  sameF (Not _) (Not _) = True
-  sameF (And _ _) (And _ _) = True
-  sameF (Or _ _) (Or _ _) = True
-  sameF (Eq _ _) (Eq _ _) = True
-  sameF _ _ = False
+instance (Logic :<: g, Choice :<: g) => Factor Logic g where
+  factorC' t (Not x) (Not y) = Just (iNot (iChc t x y))
+  factorC' t (And l r) (And l' r') = Just (iChc t l l' `iAnd` iChc t r r')
+  factorC' t (Or l r) (Or l' r') = Just (iChc t l l' `iOr` iChc t r r')
+  factorC' t (Eq l r) (Eq l' r') = Just (iChc t l l' `iEq` iChc t r r')
+  factorC' _ _ _ = Nothing
 
-instance SameF Cond where
-  sameF _ _ = True
+instance (Cond :<: g, Choice :<: g) => Factor Cond g where
+  factorC' t (If c t' e) (If c' t'' e') = Just (iIf (iChc t c c') (iChc t t' t'') (iChc t e e'))
